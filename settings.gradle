@@ -1,0 +1,3 @@
+include ':afile'
+include ':app'
+rootProject.name = "afile-demo"
