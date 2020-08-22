@@ -19,13 +19,16 @@ import com.loosu.afile.afile.FileInputScanner;
 import com.loosu.afile.afile.FileInputSources;
 import com.loosu.afile.afile.Scanner;
 import com.loosu.afile.afile.Sources;
+import com.loosu.afile.afile.Zipper;
 
 import java.io.File;
-import java.io.IOException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
+    private final Executor mExecutor = Executors.newFixedThreadPool(3);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +44,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.btn_copy_test:
                 onClickBtnCopyTest();
                 break;
+            case R.id.btn_zip_test:
+                onClickBtnZipTest();
+                break;
             case R.id.btn_del_test:
                 onClickBtnDeleteTest();
                 break;
@@ -52,16 +58,24 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
             return;
         }
-        File file1 = new File(Environment.getExternalStorageDirectory(), "Android");
         File file2 = new File("/system");
-        FileInputSources result = AFile.scan().setListener(listener)
+        final FileInputScanner scanner = AFile.scan().setListener(listener)
                 .append(file2)
-                .scan();
+                .build();
 
-        Log.i(TAG, "************************************");
-        Log.i(TAG, "dirs      : " + result.getDirSize());
-        Log.i(TAG, "files     : " + result.getFileSize());
-        Log.i(TAG, "total size: " + Formatter.formatFileSize(this, result.getTotalSize()));
+
+        for (int i = 0; i < 2; i++) {
+            mExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    FileInputSources result = scanner.scan();
+                    Log.i(TAG, "************************************");
+                    Log.i(TAG, "dirs      : " + result.getDirSize());
+                    Log.i(TAG, "files     : " + result.getFileSize());
+                    Log.i(TAG, "total size: " + Formatter.formatFileSize(getApplication(), result.getTotalSize()));
+                }
+            });
+        }
     }
 
     private void onClickBtnCopyTest() {
@@ -70,17 +84,31 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        try {
-            AFile.copy().setListener(copyListener)
-                    .append(new File("/sdcard/DCIM"))
-                    .append(new File("/sdcard/DCIM/Camera"))
-                    .copyTo(getFilesDir());
-        } catch (IOException e) {
-            e.printStackTrace();
+        AFile.copy().setListener(copyListener)
+                .append(new File("/sdcard/DCIM"))
+                .append(new File("/sdcard/DCIM/Camera"))
+                .copyTo(getFilesDir());
+    }
+
+    private void onClickBtnZipTest() {
+        if (PermissionChecker.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PermissionChecker.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
+            return;
         }
+
+
+        AFile.zip().setListener(zipListener)
+                .append(new File("/sdcard/DCIM/Camera"))
+                .append(new File("/sdcard/DCIM/Camera/beauty_20190416230730.jpg"))
+                .zipAs(new File(getFilesDir(), "1.zip"));
     }
 
     private void onClickBtnDeleteTest() {
+        if (PermissionChecker.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PermissionChecker.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
+            return;
+        }
+
         AFile.delete().setListener(deleteListener)
                 .append(getFilesDir())
                 .delete();
@@ -91,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onStart(@NonNull Scanner scanner) {
             Log.i(TAG, "onStart:");
-            scanner.cancel();
+            //scanner.cancel();
         }
 
         @Override
@@ -170,6 +198,38 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onError(@NonNull FileDeleter deleter, @NonNull Throwable throwable) {
+            Log.w(TAG, "onError: ", throwable);
+        }
+    };
+
+    private final Zipper.Listener zipListener = new Zipper.Listener() {
+        @Override
+        public void onStart(@NonNull Zipper zipper) {
+            Log.i(TAG, "onStart:");
+        }
+
+        @Override
+        public void onEnd(@NonNull Zipper zipper) {
+            Log.i(TAG, "onEnd:");
+        }
+
+        @Override
+        public void onScan(@NonNull Zipper zipper, @NonNull File file) {
+            Log.d(TAG, "onScan:" + file);
+        }
+
+        @Override
+        public void onScanResult(@NonNull Zipper zipper, @NonNull Sources sources) {
+            Log.i(TAG, "onScanResult: " + sources);
+        }
+
+        @Override
+        public void onZip(@NonNull Zipper zipper, @NonNull File file) {
+            Log.d(TAG, "onZip:" + file);
+        }
+
+        @Override
+        public void onError(@NonNull Zipper zipper, @NonNull Throwable throwable) {
             Log.w(TAG, "onError: ", throwable);
         }
     };

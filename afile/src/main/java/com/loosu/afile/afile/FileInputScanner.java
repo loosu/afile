@@ -20,7 +20,7 @@ public class FileInputScanner extends Scanner<FileInputSources> {
 
     @NonNull
     @Override
-    public FileInputSources scan() throws CancelException {
+    public synchronized FileInputSources scan() throws CancelException {
         try {
             checkCanceled();
 

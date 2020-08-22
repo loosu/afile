@@ -30,7 +30,7 @@ public final class FileDeleter extends Canceller {
      *
      * @return true if all files delete success.
      */
-    public boolean delete() {
+    public synchronized boolean delete() {
         try {
             checkCanceled();
 

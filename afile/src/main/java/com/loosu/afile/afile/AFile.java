@@ -17,4 +17,8 @@ public final class AFile {
     public static FileCopier.Builder copy() {
         return new FileCopier.Builder();
     }
+
+    public static FileZipper.Builder zip() {
+        return new FileZipper.Builder();
+    }
 }

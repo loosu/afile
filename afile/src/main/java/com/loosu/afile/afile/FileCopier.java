@@ -23,7 +23,7 @@ public class FileCopier extends Copier {
         this.sources = sources;
     }
 
-    public boolean copyTo(@NonNull File dst) throws CancelException, IOException {
+    public synchronized boolean copyTo(@NonNull File dst) throws CancelException {
         try {
             checkCanceled();
 
@@ -67,7 +67,7 @@ public class FileCopier extends Copier {
             return result;
         } catch (Throwable throwable) {
             notifyOnError(throwable);
-            throw throwable;
+            throw new RuntimeException(throwable);
         }
     }
 
@@ -123,7 +123,7 @@ public class FileCopier extends Copier {
             return new FileCopier(sources.toArray(new File[0]), listener);
         }
 
-        public boolean copyTo(@NonNull File dst) throws CancelException, IOException {
+        public boolean copyTo(@NonNull File dst) throws CancelException {
             return build().copyTo(dst);
         }
     }
