@@ -10,23 +10,17 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public final class FileScanner extends Canceller {
+public class FileInputScanner extends Scanner<FileInputSources> {
     private final File[] sources;
 
-    @Nullable
-    private Listener listener;
-
-    private FileScanner(@NonNull File[] sources, @Nullable Listener listener) {
+    private FileInputScanner(@NonNull File[] sources, @Nullable Listener listener) {
+        super(listener);
         this.sources = sources;
-        this.listener = listener;
-    }
-
-    public void setListener(@Nullable Listener listener) {
-        this.listener = listener;
     }
 
     @NonNull
-    public FileSources scan() throws CancelException {
+    @Override
+    public FileInputSources scan() throws CancelException {
         try {
             checkCanceled();
 
@@ -44,7 +38,7 @@ public final class FileScanner extends Canceller {
             // notify - end
             notifyOnEnd();
 
-            return new FileSources(dirsCache, filesCache, totalSize);
+            return new FileInputSources(dirsCache, filesCache, totalSize);
         } catch (Throwable throwable) {
             // notify - error
             notifyOnError(throwable);
@@ -80,65 +74,7 @@ public final class FileScanner extends Canceller {
         }
     }
 
-    private void notifyOnStart() {
-        if (listener != null) {
-            listener.onStart(this);
-        }
-    }
-
-    private void notifyOnEnd() {
-        if (listener != null) {
-            listener.onEnd(this);
-        }
-    }
-
-    private void notifyOnProgress(@NonNull File file) {
-        if (listener != null) {
-            listener.onProgress(this, file);
-        }
-    }
-
-    private void notifyOnError(@NonNull Throwable throwable) {
-        if (listener != null) {
-            listener.onError(this, throwable);
-        }
-    }
-
-    public interface Listener {
-
-        public void onStart(@NonNull FileScanner scanner);
-
-        public void onEnd(@NonNull FileScanner scanner);
-
-        public void onProgress(@NonNull FileScanner scanner, @NonNull File file);
-
-        public void onError(@NonNull FileScanner scanner, @NonNull Throwable throwable);
-    }
-
-    public static class AdapterListener implements Listener{
-
-        @Override
-        public void onStart(@NonNull FileScanner scanner) {
-
-        }
-
-        @Override
-        public void onEnd(@NonNull FileScanner scanner) {
-
-        }
-
-        @Override
-        public void onProgress(@NonNull FileScanner scanner, @NonNull File file) {
-
-        }
-
-        @Override
-        public void onError(@NonNull FileScanner scanner, @NonNull Throwable throwable) {
-
-        }
-    }
-
-    public static final class Builder implements IBuilder<FileScanner> {
+    public static final class Builder implements IBuilder<FileInputScanner> {
 
         private final Collection<File> sources = new ArrayList<>();
 
@@ -147,28 +83,28 @@ public final class FileScanner extends Canceller {
         Builder() {
         }
 
-        public FileScanner.Builder append(@NonNull String file) {
+        public FileInputScanner.Builder append(@NonNull String file) {
             return append(new File(file));
         }
 
-        public FileScanner.Builder append(@NonNull File file) {
+        public FileInputScanner.Builder append(@NonNull File file) {
             if (!sources.contains(file)) {
                 sources.add(file);
             }
             return this;
         }
 
-        public FileScanner.Builder setListener(@Nullable Listener listener) {
+        public FileInputScanner.Builder setListener(@Nullable Listener listener) {
             this.listener = listener;
             return this;
         }
 
         @Override
-        public FileScanner build() {
-            return new FileScanner(sources.toArray(new File[0]), listener);
+        public FileInputScanner build() {
+            return new FileInputScanner(sources.toArray(new File[0]), listener);
         }
 
-        public FileSources scan() {
+        public FileInputSources scan() {
             return build().scan();
         }
     }

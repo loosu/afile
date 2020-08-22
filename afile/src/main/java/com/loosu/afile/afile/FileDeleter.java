@@ -7,7 +7,9 @@ import com.loosu.afile.afile.interfaces.IBuilder;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 
 public final class FileDeleter extends Canceller {
 
@@ -35,13 +37,13 @@ public final class FileDeleter extends Canceller {
             notifyOnStart();
 
             // 1. scan
-            FileScanner.Builder scanner = new FileScanner.Builder();
+            FileInputScanner.Builder scanner = new FileInputScanner.Builder();
             for (File source : sources) {
                 scanner.append(source);
             }
-            FileSources scanResult = scanner.setListener(new FileScanner.AdapterListener() {
+            FileInputSources scanResult = scanner.setListener(new Scanner.AdapterListener() {
                 @Override
-                public void onProgress(@NonNull FileScanner scanner, @NonNull File file) {
+                public void onProgress(@NonNull Scanner scanner, @NonNull File file) {
                     notifyOnScan(file);
                 }
             }).scan();
@@ -60,6 +62,12 @@ public final class FileDeleter extends Canceller {
 
             // 3. delete dirs
             File[] dirs = scanResult.dirs;
+            Arrays.sort(dirs, new Comparator<File>() {
+                @Override
+                public int compare(File o1, File o2) {
+                    return o2.compareTo(o1);
+                }
+            });
             for (File dir : dirs) {
                 notifyOnDelete(dir);
                 if (!checkCancelAndDelete(dir)) {
@@ -106,7 +114,7 @@ public final class FileDeleter extends Canceller {
         }
     }
 
-    private void notifyOnScanResult(@NonNull FileSources sources) {
+    private void notifyOnScanResult(@NonNull FileInputSources sources) {
         if (listener != null) {
             listener.onScanResult(this, sources);
         }
@@ -126,7 +134,7 @@ public final class FileDeleter extends Canceller {
 
         public void onScan(@NonNull FileDeleter deleter, @NonNull File file);
 
-        public void onScanResult(@NonNull FileDeleter deleter, @NonNull FileSources sources);
+        public void onScanResult(@NonNull FileDeleter deleter, @NonNull FileInputSources sources);
 
         public void onDelete(@NonNull FileDeleter deleter, @NonNull File file);
 
@@ -151,7 +159,7 @@ public final class FileDeleter extends Canceller {
         }
 
         @Override
-        public void onScanResult(@NonNull FileDeleter deleter, @NonNull FileSources sources) {
+        public void onScanResult(@NonNull FileDeleter deleter, @NonNull FileInputSources sources) {
 
         }
 

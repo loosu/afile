@@ -10,8 +10,8 @@ public final class AFile {
         return new FileDeleter.Builder();
     }
 
-    public static FileScanner.Builder scan() {
-        return new FileScanner.Builder();
+    public static FileInputScanner.Builder scan() {
+        return new FileInputScanner.Builder();
     }
 
     public static FileCopier.Builder copy() {
