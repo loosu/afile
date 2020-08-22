@@ -14,5 +14,11 @@
         android:onClick="onClick"
         android:text="Scan test" />
 
+    <Button
+        android:id="@+id/btn_del_test"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onClick"
+        android:text="Delete test" />
 
 </LinearLayout>

@@ -1,4 +1,4 @@
-package com.loosu.afile.afile.core;
+package com.loosu.afile.afile;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,10 +27,12 @@ public final class FileScanner extends Canceller {
 
     @NonNull
     public FileSources scan() throws CancelException {
-        // notify
-        notifyOnStart();
-
         try {
+            checkCanceled();
+
+            // notify - start
+            notifyOnStart();
+
             final Collection<File> dirsCache = new ArrayList<>();
             final Collection<File> filesCache = new ArrayList<>();
             long totalSize = 0;
@@ -113,11 +115,37 @@ public final class FileScanner extends Canceller {
         public void onError(@NonNull FileScanner scanner, @NonNull Throwable throwable);
     }
 
+    public static class AdapterListener implements Listener{
+
+        @Override
+        public void onStart(@NonNull FileScanner scanner) {
+
+        }
+
+        @Override
+        public void onEnd(@NonNull FileScanner scanner) {
+
+        }
+
+        @Override
+        public void onProgress(@NonNull FileScanner scanner, @NonNull File file) {
+
+        }
+
+        @Override
+        public void onError(@NonNull FileScanner scanner, @NonNull Throwable throwable) {
+
+        }
+    }
+
     public static final class Builder implements IBuilder<FileScanner> {
 
         private final Collection<File> sources = new ArrayList<>();
 
         private Listener listener;
+
+        Builder() {
+        }
 
         public FileScanner.Builder append(@NonNull String file) {
             return append(new File(file));

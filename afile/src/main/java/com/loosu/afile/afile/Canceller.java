@@ -1,4 +1,4 @@
-package com.loosu.afile.afile.core;
+package com.loosu.afile.afile;
 
 import com.loosu.afile.afile.excepton.CancelException;
 import com.loosu.afile.afile.interfaces.Cancelable;

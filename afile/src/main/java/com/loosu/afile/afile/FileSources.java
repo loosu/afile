@@ -1,14 +1,15 @@
-package com.loosu.afile.afile.core;
+package com.loosu.afile.afile;
 
 import androidx.annotation.NonNull;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
 
 public class FileSources {
-    private final File[] dirs;
-    private final File[] files;
-    private final long totalSize;
+    final File[] dirs;
+    final File[] files;
+    final long totalSize;
 
     FileSources(@NonNull File[] dirs, @NonNull File[] files, long totalSize) {
         this.dirs = dirs;
@@ -32,5 +33,14 @@ public class FileSources {
 
     public long getTotalSize() {
         return totalSize;
+    }
+
+    @Override
+    public String toString() {
+        return "FileSources{" +
+                "dirs=" + dirs.length +
+                ", files=" + files.length +
+                ", totalSize=" + totalSize +
+                '}';
     }
 }
