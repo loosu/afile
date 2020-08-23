@@ -21,4 +21,8 @@ public final class AFile {
     public static FileZipper.Builder zip() {
         return new FileZipper.Builder();
     }
+
+    public static FileUnzip.Builder unzip() {
+        return new FileUnzip.Builder();
+    }
 }

@@ -7,7 +7,6 @@ import androidx.core.content.PermissionChecker;
 
 import android.Manifest;
 import android.os.Bundle;
-import android.os.Environment;
 import android.text.format.Formatter;
 import android.util.Log;
 import android.view.View;
@@ -46,6 +45,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.btn_zip_test:
                 onClickBtnZipTest();
+                break;
+            case R.id.btn_unzip_test:
+                onCLickBtnUnzip();
                 break;
             case R.id.btn_del_test:
                 onClickBtnDeleteTest();
@@ -99,8 +101,19 @@ public class MainActivity extends AppCompatActivity {
 
         AFile.zip().setListener(zipListener)
                 .append(new File("/sdcard/DCIM/Camera"))
-                .append(new File("/sdcard/DCIM/Camera/beauty_20190416230730.jpg"))
+                .append(new File("/sdcard/DCIM/Camera/beaut" +
+                        ".y_20190416230730.jpg"))
                 .zipAs(new File(getFilesDir(), "1.zip"));
+    }
+
+    private void onCLickBtnUnzip() {
+        if (PermissionChecker.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PermissionChecker.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
+            return;
+        }
+
+        AFile.unzip().source(new File(getFilesDir(), "A-ORC.zip"))
+                .unzipTo(new File(getFilesDir(), "1unzip"));
     }
 
     private void onClickBtnDeleteTest() {
