@@ -10,15 +10,11 @@ import android.os.Bundle;
 import android.text.format.Formatter;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.loosu.afile.afile.AFile;
-import com.loosu.afile.afile.Copier;
-import com.loosu.afile.afile.FileDeleter;
-import com.loosu.afile.afile.FileInputScanner;
-import com.loosu.afile.afile.FileInputSources;
-import com.loosu.afile.afile.Scanner;
-import com.loosu.afile.afile.Sources;
-import com.loosu.afile.afile.Zipper;
+import com.loosu.afile.afile.action.Action;
+import com.loosu.afile.afile.action.FileInfo;
 
 import java.io.File;
 import java.util.concurrent.Executor;
@@ -56,28 +52,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void onClickBtnScanTest() {
+        Log.i(TAG, "onClickBtnScanTest");
         if (PermissionChecker.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PermissionChecker.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
             return;
         }
         File file2 = new File("/system");
-        final FileInputScanner scanner = AFile.scan().setListener(listener)
+        FileInfo result = AFile.scan().setListener(actionListener)
                 .append(file2)
-                .build();
+                .start();
 
-
-        for (int i = 0; i < 2; i++) {
-            mExecutor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    FileInputSources result = scanner.scan();
-                    Log.i(TAG, "************************************");
-                    Log.i(TAG, "dirs      : " + result.getDirSize());
-                    Log.i(TAG, "files     : " + result.getFileSize());
-                    Log.i(TAG, "total size: " + Formatter.formatFileSize(getApplication(), result.getTotalSize()));
-                }
-            });
-        }
+        Log.i(TAG, "************************************");
+        Log.i(TAG, "dirs      : " + result.getDirSize());
+        Log.i(TAG, "files     : " + result.getFileSize());
+        Log.i(TAG, "total size: " + Formatter.formatFileSize(getApplication(), result.getTotalSize()));
     }
 
     private void onClickBtnCopyTest() {
@@ -86,10 +74,11 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        AFile.copy().setListener(copyListener)
+        AFile.copy().setListener(actionListener)
                 .append(new File("/sdcard/DCIM"))
                 .append(new File("/sdcard/DCIM/Camera"))
-                .copyTo(getFilesDir());
+                .setDst(getFilesDir())
+                .start();
     }
 
     private void onClickBtnZipTest() {
@@ -99,11 +88,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        AFile.zip().setListener(zipListener)
+        AFile.zip().setListener(actionListener)
                 .append(new File("/sdcard/DCIM/Camera"))
-                .append(new File("/sdcard/DCIM/Camera/beaut" +
-                        ".y_20190416230730.jpg"))
-                .zipAs(new File(getFilesDir(), "1.zip"));
+                .setDst(new File(getFilesDir(), "1.zip"))
+                .start();
     }
 
     private void onCLickBtnUnzip() {
@@ -112,8 +100,10 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        AFile.unzip().source(new File(getFilesDir(), "A-ORC.zip"))
-                .unzipTo(new File(getFilesDir(), "1unzip"));
+        AFile.unzip().setListener(actionListener)
+                .source(new File(getFilesDir(), "1.zip"))
+                .setDst(new File(getFilesDir(), "1unzip"))
+                .start();
     }
 
     private void onClickBtnDeleteTest() {
@@ -122,128 +112,36 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        AFile.delete().setListener(deleteListener)
+        AFile.delete().setListener(actionListener)
+                .setScanListener(actionListener)
                 .append(getFilesDir())
-                .delete();
+                .start();
     }
 
-    private final FileInputScanner.Listener listener = new FileInputScanner.Listener() {
-
+    public final Action.Listener actionListener = new Action.Listener() {
         @Override
-        public void onStart(@NonNull Scanner scanner) {
-            Log.i(TAG, "onStart:");
-            //scanner.cancel();
+        public void onPrepare(@NonNull Action action) {
+            Log.i(TAG, "onPrepare: action = " + action);
         }
 
         @Override
-        public void onEnd(@NonNull Scanner scanner) {
-            Log.i(TAG, "onEnd:");
+        public void onStart(@NonNull Action action) {
+            Log.i(TAG, "onStart: action = " + action);
         }
 
         @Override
-        public void onProgress(@NonNull Scanner scanner, @NonNull File file) {
-            Log.d(TAG, "onProgress: file = " + file);
+        public void onEnd(@NonNull Action action) {
+            Log.i(TAG, "onEnd: action = " + action);
         }
 
         @Override
-        public void onError(@NonNull Scanner scanner, @NonNull Throwable throwable) {
-            Log.w(TAG, "onError: ", throwable);
-        }
-    };
-
-    public final Copier.Listener copyListener = new Copier.Listener() {
-        @Override
-        public void onStart(@NonNull Copier copier) {
-            Log.i(TAG, "onStart:");
+        public void onProgress(@NonNull Action action, @NonNull File in, @NonNull File out) {
+            Log.d(TAG, "onProgress:" + action + ", in = " + in + ", out = " + out);
         }
 
         @Override
-        public void onEnd(@NonNull Copier copier) {
-            Log.i(TAG, "onEnd:");
-        }
-
-        @Override
-        public void onScan(@NonNull Copier copier, @NonNull File file) {
-            Log.d(TAG, "onScan:" + file);
-        }
-
-        @Override
-        public void onScanResult(@NonNull Copier copier, @NonNull Sources sources) {
-            Log.i(TAG, "onScanResult: " + sources);
-        }
-
-        @Override
-        public void onCopy(@NonNull Copier copier, @NonNull File file) {
-            Log.d(TAG, "onCopy:" + file);
-        }
-
-        @Override
-        public void onError(@NonNull Copier copier, @NonNull Throwable throwable) {
-            Log.w(TAG, "onError: ", throwable);
-        }
-    };
-
-    public final FileDeleter.Listener deleteListener = new FileDeleter.Listener() {
-        @Override
-        public void onStart(@NonNull FileDeleter deleter) {
-            Log.i(TAG, "onStart:");
-        }
-
-        @Override
-        public void onEnd(@NonNull FileDeleter deleter) {
-            Log.i(TAG, "onEnd:");
-        }
-
-        @Override
-        public void onScan(@NonNull FileDeleter deleter, @NonNull File file) {
-            Log.d(TAG, "onScan:" + file);
-        }
-
-        @Override
-        public void onScanResult(@NonNull FileDeleter deleter, @NonNull FileInputSources sources) {
-            Log.i(TAG, "onScanResult: " + sources);
-        }
-
-        @Override
-        public void onDelete(@NonNull FileDeleter deleter, @NonNull File file) {
-            Log.d(TAG, "onDelete:" + file);
-        }
-
-        @Override
-        public void onError(@NonNull FileDeleter deleter, @NonNull Throwable throwable) {
-            Log.w(TAG, "onError: ", throwable);
-        }
-    };
-
-    private final Zipper.Listener zipListener = new Zipper.Listener() {
-        @Override
-        public void onStart(@NonNull Zipper zipper) {
-            Log.i(TAG, "onStart:");
-        }
-
-        @Override
-        public void onEnd(@NonNull Zipper zipper) {
-            Log.i(TAG, "onEnd:");
-        }
-
-        @Override
-        public void onScan(@NonNull Zipper zipper, @NonNull File file) {
-            Log.d(TAG, "onScan:" + file);
-        }
-
-        @Override
-        public void onScanResult(@NonNull Zipper zipper, @NonNull Sources sources) {
-            Log.i(TAG, "onScanResult: " + sources);
-        }
-
-        @Override
-        public void onZip(@NonNull Zipper zipper, @NonNull File file) {
-            Log.d(TAG, "onZip:" + file);
-        }
-
-        @Override
-        public void onError(@NonNull Zipper zipper, @NonNull Throwable throwable) {
-            Log.w(TAG, "onError: ", throwable);
+        public void onError(@NonNull Action action, @NonNull Throwable throwable) {
+            Log.w(TAG, "onError: action = " + action, throwable);
         }
     };
 }

@@ -1,9 +1,9 @@
-package com.loosu.afile.afile;
+package com.loosu.afile.afile.action;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.loosu.afile.afile.excepton.CancelException;
+import com.loosu.afile.afile.AFileUtils;
 import com.loosu.afile.afile.interfaces.IBuilder;
 
 import java.io.File;
@@ -18,45 +18,48 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-class FileZipper extends Zipper {
+public class Zip extends Action {
     private final File[] sources;
+    private final File dst;
+    private final Listener scanListener;
 
-    private FileZipper(@NonNull File[] sources, @Nullable Listener listener) {
-        super(listener);
+    private Zip(@NonNull File[] sources, @NonNull File dst, @Nullable Listener listener, @Nullable Listener scanListener) {
         this.sources = sources;
+        this.dst = dst;
+        this.scanListener = scanListener;
+        setListener(listener);
+    }
+
+    public void zip() {
+        run();
     }
 
     @Override
-    public synchronized boolean zipAs(@NonNull File dst) throws CancelException {
+    public final synchronized void run() {
         try {
             checkCanceled();
+            notifyOnPrepare();
 
-            notifyOnStart();
-
-            FileInOutScanner.Builder scanner = new FileInOutScanner.Builder();
+            // 1. 扫描所有输入文件.
+            Scan.Builder scanner = new Scan.Builder();
             for (File source : sources) {
                 scanner.append(source);
             }
+            FileInfo scanResult = scanner.setListener(scanListener)
+                    .setDst(new File(""))
+                    .start();
 
-            FileInOutSources scanResult = scanner.setListener(new Scanner.AdapterListener() {
-                @Override
-                public void onProgress(@NonNull Scanner scanner, @NonNull File file) {
-                    notifyOnScan(file);
-                }
-            }).setDst(new File("")).scan();
-
-            notifyOnScanResult(scanResult);
-
+            checkCanceled();
+            notifyOnStart();
             ZipOutputStream zos = null;
             FileInputStream fis = null;
-
             try {
                 zos = new ZipOutputStream(new FileOutputStream(dst));
                 Map<File, File> dirs = scanResult.dirs;
                 for (Map.Entry<File, File> entry : dirs.entrySet()) {
                     File inFile = entry.getKey();
                     File outFile = entry.getValue();
-                    notifyOnZip(inFile);
+                    notifyOnProgress(inFile, outFile);
                     ZipEntry zipEntry = new ZipEntry(outFile.getAbsolutePath() + File.separator);
                     zos.putNextEntry(zipEntry);
                     zos.closeEntry();
@@ -66,7 +69,7 @@ class FileZipper extends Zipper {
                 for (Map.Entry<File, File> entry : files.entrySet()) {
                     File inFile = entry.getKey();
                     File outFile = entry.getValue();
-                    notifyOnZip(inFile);
+                    notifyOnProgress(inFile, outFile);
 
                     ZipEntry zipEntry = new ZipEntry(outFile.getAbsolutePath());
                     zos.putNextEntry(zipEntry);
@@ -81,7 +84,6 @@ class FileZipper extends Zipper {
             }
 
             notifyOnEnd();
-            return false;
         } catch (Throwable throwable) {
             notifyOnError(throwable);
             throw new RuntimeException(throwable);
@@ -96,20 +98,41 @@ class FileZipper extends Zipper {
         }
     }
 
-    public static final class Builder implements IBuilder<FileZipper> {
+    @Override
+    public String toString() {
+        return "Zip@" + hashCode();
+    }
+
+    public static final class Builder implements IBuilder<Zip> {
 
         private final Collection<File> sources = new ArrayList<>();
-
+        @Nullable
+        private File dst;
         @Nullable
         private Listener listener;
+        @Nullable
+        private Listener scanListener;
 
-        Builder() {
+        public Builder() {
         }
 
-        public  Builder append(@NonNull File file) {
+        public Builder append(@NonNull String file) {
+            return append(new File(file));
+        }
+
+        public Builder append(@NonNull File file) {
             if (!sources.contains(file)) {
                 sources.add(file);
             }
+            return this;
+        }
+
+        public Builder setDst(@NonNull String dst) {
+            return setDst(new File(dst));
+        }
+
+        public Builder setDst(@NonNull File dst) {
+            this.dst = dst;
             return this;
         }
 
@@ -118,13 +141,19 @@ class FileZipper extends Zipper {
             return this;
         }
 
-        @Override
-        public FileZipper build() {
-            return new FileZipper(sources.toArray(new File[0]), listener);
+        public Builder setScanListener(@Nullable Listener scanListener) {
+            this.scanListener = scanListener;
+            return this;
         }
 
-        public boolean zipAs(@NonNull File dst) throws CancelException {
-            return build().zipAs(dst);
+        @Override
+        public Zip build() {
+            AFileUtils.requireNonNull(dst, "dst is null");
+            return new Zip(sources.toArray(new File[0]), dst, listener, scanListener);
+        }
+
+        public void start() {
+            build().zip();
         }
     }
 }

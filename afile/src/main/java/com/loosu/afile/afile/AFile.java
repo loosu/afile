@@ -1,28 +1,34 @@
 package com.loosu.afile.afile;
 
 
+import com.loosu.afile.afile.action.Copy;
+import com.loosu.afile.afile.action.Delete;
+import com.loosu.afile.afile.action.Scan;
+import com.loosu.afile.afile.action.Unzip;
+import com.loosu.afile.afile.action.Zip;
+
 public final class AFile {
     private AFile() {
 
     }
 
-    public static FileDeleter.Builder delete() {
-        return new FileDeleter.Builder();
+    public static Delete.Builder delete() {
+        return new Delete.Builder();
     }
 
-    public static FileInputScanner.Builder scan() {
-        return new FileInputScanner.Builder();
+    public static Scan.Builder scan() {
+        return new Scan.Builder();
     }
 
-    public static FileCopier.Builder copy() {
-        return new FileCopier.Builder();
+    public static Copy.Builder copy() {
+        return new Copy.Builder();
     }
 
-    public static FileZipper.Builder zip() {
-        return new FileZipper.Builder();
+    public static Zip.Builder zip() {
+        return new Zip.Builder();
     }
 
-    public static FileUnzip.Builder unzip() {
-        return new FileUnzip.Builder();
+    public static Unzip.Builder unzip() {
+        return new Unzip.Builder();
     }
 }
