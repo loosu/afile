@@ -1,7 +1,7 @@
-package com.loosu.afile.afile;
+package com.loosu.afile;
 
-import com.loosu.afile.afile.excepton.CancelException;
-import com.loosu.afile.afile.interfaces.Cancelable;
+import com.loosu.afile.excepton.CancelException;
+import com.loosu.afile.interfaces.Cancelable;
 
 public abstract class Canceller implements Cancelable {
     private boolean canceled = false;

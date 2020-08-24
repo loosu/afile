@@ -1,4 +1,4 @@
-package com.loosu.afile.afile.interfaces;
+package com.loosu.afile.interfaces;
 
 public interface Cancelable {
 

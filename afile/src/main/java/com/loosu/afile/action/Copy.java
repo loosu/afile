@@ -1,10 +1,10 @@
-package com.loosu.afile.afile.action;
+package com.loosu.afile.action;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.loosu.afile.afile.AFileUtils;
-import com.loosu.afile.afile.interfaces.IBuilder;
+import com.loosu.afile.AFileUtils;
+import com.loosu.afile.interfaces.IBuilder;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,7 +44,7 @@ public class Copy extends Action {
             for (File source : sources) {
                 scanner.append(source);
             }
-            FileInfo scanResult = scanner.setListener(scanListener)
+            Scan.Result scanResult = scanner.setListener(scanListener)
                     .setDst(dst)
                     .start();
 

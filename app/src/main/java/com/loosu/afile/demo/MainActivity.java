@@ -10,20 +10,15 @@ import android.os.Bundle;
 import android.text.format.Formatter;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
-import com.loosu.afile.afile.AFile;
-import com.loosu.afile.afile.action.Action;
-import com.loosu.afile.afile.action.FileInfo;
+import com.loosu.afile.AFile;
+import com.loosu.afile.action.Action;
+import com.loosu.afile.action.Scan;
 
 import java.io.File;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
-
-    private final Executor mExecutor = Executors.newFixedThreadPool(3);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         File file2 = new File("/system");
-        FileInfo result = AFile.scan().setListener(actionListener)
+        Scan.Result result = AFile.scan().setListener(actionListener)
                 .append(file2)
                 .start();
 

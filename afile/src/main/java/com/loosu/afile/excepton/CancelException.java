@@ -1,4 +1,4 @@
-package com.loosu.afile.afile.excepton;
+package com.loosu.afile.excepton;
 
 public class CancelException extends RuntimeException {
     public CancelException() {

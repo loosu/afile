@@ -1,9 +1,9 @@
-package com.loosu.afile.afile.action;
+package com.loosu.afile.action;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.loosu.afile.afile.Canceller;
+import com.loosu.afile.Canceller;
 
 import java.io.File;
 

@@ -1,11 +1,11 @@
-package com.loosu.afile.afile;
+package com.loosu.afile;
 
 
-import com.loosu.afile.afile.action.Copy;
-import com.loosu.afile.afile.action.Delete;
-import com.loosu.afile.afile.action.Scan;
-import com.loosu.afile.afile.action.Unzip;
-import com.loosu.afile.afile.action.Zip;
+import com.loosu.afile.action.Copy;
+import com.loosu.afile.action.Delete;
+import com.loosu.afile.action.Scan;
+import com.loosu.afile.action.Unzip;
+import com.loosu.afile.action.Zip;
 
 public final class AFile {
     private AFile() {

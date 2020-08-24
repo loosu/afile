@@ -1,10 +1,10 @@
-package com.loosu.afile.afile.action;
+package com.loosu.afile.action;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.loosu.afile.afile.AFileUtils;
-import com.loosu.afile.afile.interfaces.IBuilder;
+import com.loosu.afile.AFileUtils;
+import com.loosu.afile.interfaces.IBuilder;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ public final class Scan extends Action {
     private final File[] sources;
     private final File dst;
     @Nullable
-    private FileInfo result;
+    private Result result;
 
     private Scan(@NonNull File[] sources, @NonNull File dst, @Nullable Listener listener) {
         AFileUtils.requireNonNull(sources, "sources is null");
@@ -28,7 +28,7 @@ public final class Scan extends Action {
     }
 
     @NonNull
-    public final synchronized FileInfo scan() {
+    public final synchronized Result scan() {
         if (!isScanned()) {
             run();
         }
@@ -40,7 +40,7 @@ public final class Scan extends Action {
     }
 
     @NonNull
-    public FileInfo getResult() {
+    public Result getResult() {
         return AFileUtils.requireNonNull(result, "did not scanned");
     }
 
@@ -63,7 +63,7 @@ public final class Scan extends Action {
                 totalSize += recursiveScan(source, dst, dirsCache, filesCache);
             }
 
-            result = new FileInfo(dirsCache, filesCache, totalSize);
+            result = new Result(dirsCache, filesCache, totalSize);
 
             notifyOnEnd();
         } catch (Throwable throwable) {
@@ -152,8 +152,43 @@ public final class Scan extends Action {
                     listener);
         }
 
-        public FileInfo start() {
+        public Result start() {
             return build().scan();
+        }
+    }
+
+    public static final class Result {
+        final Map<File, File> dirs;
+        final Map<File, File> files;
+        private final long totalSize;
+
+        public Result(@NonNull Map<File, File> dirs, @NonNull Map<File, File> files, long totalSize) {
+            AFileUtils.requireNonNull(dirs, "dir is null");
+            AFileUtils.requireNonNull(files, "files is null");
+            this.dirs = dirs;
+            this.files = files;
+            this.totalSize = totalSize;
+        }
+
+        public int getDirSize() {
+            return dirs.size();
+        }
+
+        public int getFileSize() {
+            return files.size();
+        }
+
+        public long getTotalSize() {
+            return totalSize;
+        }
+
+        @Override
+        public String toString() {
+            return "FileSources{" +
+                    "dirs=" + getDirSize() +
+                    ", files=" + getFileSize() +
+                    ", totalSize=" + getTotalSize() +
+                    '}';
         }
     }
 }

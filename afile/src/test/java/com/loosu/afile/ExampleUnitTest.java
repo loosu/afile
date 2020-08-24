@@ -1,4 +1,4 @@
-package com.loosu.afile.afile;
+package com.loosu.afile;
 
 import org.junit.Test;
 
