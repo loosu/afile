@@ -23,7 +23,7 @@ build.gradle(:Module)
 
 ```groovy
 	dependencies {
-	        implementation 'com.github.loosu:afile:Tag'
+	        implementation 'com.github.loosu:afile:1.0.0'
 	}
 ```
 
