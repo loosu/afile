@@ -12,16 +12,16 @@ public final class AFile {
 
     }
 
-    public static Delete.Builder delete() {
-        return new Delete.Builder();
-    }
-
     public static Scan.Builder scan() {
         return new Scan.Builder();
     }
 
     public static Copy.Builder copy() {
         return new Copy.Builder();
+    }
+
+    public static Delete.Builder delete() {
+        return new Delete.Builder();
     }
 
     public static Zip.Builder zip() {

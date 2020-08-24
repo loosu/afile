@@ -13,7 +13,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public final class Unzip extends Action {
-    private static final String TAG = "FileUnzip";
 
     private final File src;
     private final File dst;
@@ -36,7 +35,7 @@ public final class Unzip extends Action {
             notifyOnStart();
 
             ZipInputStream zis = new ZipInputStream(new FileInputStream(src));
-            ZipEntry zipEntry = null;
+            ZipEntry zipEntry;
             while ((zipEntry = zis.getNextEntry()) != null) {
                 String name = zipEntry.getName();
                 File file = new File(dst, name);
@@ -53,7 +52,7 @@ public final class Unzip extends Action {
                 file.createNewFile();
 
                 FileOutputStream fos = new FileOutputStream(file);
-                int len = -1;
+                int len;
                 byte[] buff = new byte[200 * 1024];
                 while ((len = zis.read(buff)) != -1) {
                     fos.write(buff, 0, len);
